@@ -32,13 +32,15 @@ import * as d3 from 'd3';
 // }, [windowRef]);
 
 const PerfView = ({ snapshots, viewIndex }) => {
-  const [chartData, updateChartData] = useState(snapshots[snapshots.length - 1]);
+  const [chartData, setChartData] = useState(snapshots[snapshots.length - 1]);
   const svgRef = useRef(null);
-
+  
   // Todo: implement update functions...
   const [curZoom, setZoom] = useState(null);
   const [width, setWidth] = useState(600);
   const [height, setHeight] = useState(600);
+  const [prevZoomLevel, setPrevZoomLevel] = useState(null);
+  const [focalNode, setFocalNode] = useState(null);
 
   // set up color scaling function
   const color = d3.scaleLinear()
@@ -69,6 +71,9 @@ const PerfView = ({ snapshots, viewIndex }) => {
       console.log(`SNAPSHOT[${i}] App actualDuration:`, snapshots[i].children[0].componentData.actualDuration);
     }
 
+    // when user time jumps or changes state, store current zoom level, so we can return to it
+    setPrevZoomLevel([focalNode.x, focalNode.y, focalNode.r * 2]);
+
     // clear old tree
     while (svgRef.current.hasChildNodes()) {
       svgRef.current.removeChild(svgRef.current.lastChild);
@@ -78,9 +83,9 @@ const PerfView = ({ snapshots, viewIndex }) => {
     if (viewIndex < 0) indexToDisplay = snapshots.length - 1;
     else indexToDisplay = viewIndex;
 
-    updateChartData(snapshots[indexToDisplay]);
+    setChartData(snapshots[indexToDisplay]);
     console.log(`Using snapshots[${indexToDisplay}]`);
-  }, [svgRef, viewIndex, snapshots, chartData]);
+  }, [svgRef, viewIndex, snapshots, chartData, focalNode]);
 
   useEffect(() => {
     console.log('PerfView -> chartData', chartData);
@@ -90,13 +95,13 @@ const PerfView = ({ snapshots, viewIndex }) => {
     // console.log('PerfView -> packedRoot', packedRoot);
 
     // initial focus points at root of tree
-    let focus = packedRoot;
-    let view;
+    setFocalNode(packedRoot);   // points at a node
+    let curView = null;       // array [x, y, r]
 
     // set up viewBox dimensions and onClick for parent svg
     const svg = d3.select(svgRef.current)
       .attr('viewBox', `-${width / 2} -${height / 2} ${width} ${height}`)
-      .on('click', () => zoom(packedRoot));
+      .on('click', () => zoomTransition(packedRoot));
 
     // connect circles below root to data
     const node = svg.append('g')
@@ -107,7 +112,10 @@ const PerfView = ({ snapshots, viewIndex }) => {
       .attr('pointer-events', d => (!d.children ? 'none' : null))
       .on('mouseover', () => d3.select(this).attr('stroke', '#000'))
       .on('mouseout', () => d3.select(this).attr('stroke', null))
-      .on('click', d => focus !== d && (zoom(d), d3.event.stopPropagation()));
+      .on('click', d => {
+        console.log('click handler, zoom to d:', d);
+        return focalNode !== d && (zoomTransition(d), d3.event.stopPropagation());
+      });
 
     // console.log('PerfView -> node', node);
     // console.log('packedRoot.descendants()', packedRoot.descendants());
@@ -129,35 +137,43 @@ const PerfView = ({ snapshots, viewIndex }) => {
     node.exit().remove();
 
     // jump to default zoom state
+    // if (lastZoomLevel) {
+    //   console.log('PerfView -> lastZoomLevel', lastZoomLevel);
+    //   zoomTo(lastZoomLevel);
+    // } else
+    
     zoomTo([packedRoot.x, packedRoot.y, packedRoot.r * 2]);
 
-    function zoomTo(v) {
-      // console.log("zoomTo -> v", v);
-      const k = width / v[2];
-      view = v;
-      label.attr('transform', d => `translate(${(d.x - v[0]) * k},${(d.y - v[1]) * k})`);
-      node.attr('transform', d => `translate(${(d.x - v[0]) * k},${(d.y - v[1]) * k})`);
+    // zoom to newView, passed as an array [x, y, r]
+    function zoomTo(newView) {
+      console.log('zoomTo -> newView', newView);
+      const k = width / newView[2];
+      curView = newView;
+      label.attr('transform', d => `translate(${(d.x - newView[0]) * k},${(d.y - newView[1]) * k})`);
+      node.attr('transform', d => `translate(${(d.x - newView[0]) * k},${(d.y - newView[1]) * k})`);
       node.attr('r', d => d.r * k);
     }
 
-    function zoom(d) {
-      // console.log("zoom -> d", d);
-      const focus0 = focus;
-      focus = d;
+    // generate interpolated zoom to target node. target stored in focalNode
+    function zoomTransition(destNode) {
+      console.log('zoomTransition -> destNode', destNode);
+      console.log('zoomTransition: ', curView);
+      console.log('focalNode: ', focalNode);
+      // const focalNode0 = focalNode;
+      focalNode = destNode;
 
       const transition = svg.transition()
           .duration(d3.event.altKey ? 7500 : 750)
           .tween('zoom', d => {
-            const i = d3.interpolateZoom(view, [focus.x, focus.y, focus.r * 2]);
+            const i = d3.interpolateZoom(curView, [focalNode.x, focalNode.y, focalNode.r * 2]);
             return t => zoomTo(i(t));
           });
 
-      label
-      .filter(function (d) { return d.parent === focus || this.style.display === 'inline'; })
+      label.filter(function (d) { return d.parent === focalNode || this.style.display === 'inline'; })
       .transition(transition)
-        .style('fill-opacity', d => (d.parent === focus ? 1 : 0))
-        .on('start', function (d) { if (d.parent === focus) this.style.display = 'inline'; })
-        .on('end', function (d) { if (d.parent !== focus) this.style.display = 'none'; });
+        .style('fill-opacity', d => (d.parent === focalNode ? 1 : 0))
+        .on('start', function (d) { if (d.parent === focalNode) this.style.display = 'inline'; })
+        .on('end', function (d) { if (d.parent !== focalNode) this.style.display = 'none'; });
     }
   }, [chartData, color, packFunc, width, height]);
 
