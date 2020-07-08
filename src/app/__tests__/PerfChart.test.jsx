@@ -10,41 +10,41 @@ configure({ adapter: new Adapter() });
 describe('Life cycle methods in PerfView', () => {
   let wrapper;
 
-  const snapshots = [
-    {
-      name: 'root',
-      state: 'root',
-      componentData: {},
-      children:
-      [
-        {
-          name: 'App',
-          state: { counter: 10 },
-          componentData: { actualDuration: 10000 },
-          children:
-          [
-            { name: 'DisplayPanel', state: 'stateless', componentData: { actualDuration: 5000 }, children: [] },
-            { name: 'AltDisplay', state: 'stateless', componentData: { actualDuration: 4000 }, children: [] },
-            {
-              name: 'Button Panel',
-              state: 'stateless',
-              componentData: { actualDuration: 3000 },
-              children:
-              [
-                { name: 'Button', state: { counter: 2 }, componentData: { actualDuration: 2000 }, children: [] },
-                { name: 'Button', state: { counter: 1 }, componentData: { actualDuration: 1000 }, children: [] },
-              ],
-            },
-            { name: 'MarketSContainer', componentData: { actualDuration: 500 }, children: [] },
-            { name: 'MainSlider', componentData: { actualDuration: 100 }, children: [] },
-          ],
-        },
-      ],
-    },
-  ];
-
+  const snapshot = {
+    name: 'root',
+    state: 'root',
+    componentData: {},
+    children:
+    [
+      {
+        name: 'App',
+        state: { counter: 10 },
+        componentData: { actualDuration: 10000 },
+        children:
+        [
+          { name: 'DisplayPanel', state: 'stateless', componentData: { actualDuration: 5000 }, children: [] },
+          { name: 'AltDisplay', state: 'stateless', componentData: { actualDuration: 4000 }, children: [] },
+          {
+            name: 'Button Panel',
+            state: 'stateless',
+            componentData: { actualDuration: 3000 },
+            children:
+            [
+              { name: 'Button', state: { counter: 2 }, componentData: { actualDuration: 2000 }, children: [] },
+              { name: 'Button', state: { counter: 1 }, componentData: { actualDuration: 1000 }, children: [] },
+            ],
+          },
+          { name: 'MarketSContainer', state: 'stateless', componentData: { actualDuration: 500 }, children: [] },
+          { name: 'MainSlider', state: 'stateless', componentData: { actualDuration: 100 }, children: [] },
+        ],
+      },
+    ],
+  };
+  
   // Set up wrapper
   beforeEach(() => {
+    const snapshots = [];
+    snapshots.push(snapshot);
     wrapper = mount(<Chart {...props} />);
     wrapper = mount(<PerfView viewIndex={viewIndex} snapshots={snapshots} />);
   });
