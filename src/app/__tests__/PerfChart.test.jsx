@@ -2,14 +2,39 @@ import React from 'react';
 import { configure, mount } from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
 import PerfView from '../components/PerfView.jsx';
-// Unit test cases for d3 functionality
+
+// Unit test cases for PerfView
 configure({ adapter: new Adapter() });
-// Test the life cycle methods in Chart
-describe('Life cycle methods in Chart', () => {
+
+// Test life cycle methods
+describe('Life cycle methods in PerfView', () => {
   let wrapper;
-  const props = {
-    hierarchy: 0,
+
+  const snapshots = {
+    name: 'App',
+    timeData: { actualDuration: 35000 },
+    value: 17010,
+    children: [
+      { name: 'DisplayPanel', timeData: { actualDuration: 35000 }, value: 17010 },
+      { name: 'AltDisplay', timeData: { actualDuration: 35000 }, value: 5842 },
+      {
+        name: 'Button Panel',
+        timeData: { actualDuration: 35000 },
+        value: 17010,
+        children: [
+          { name: 'Button', timeData: { actualDuration: 35000 }, value: 50000 },
+          { name: 'Button', timeData: { actualDuration: 35000 }, value: 2047 },
+          { name: 'Button', timeData: { actualDuration: 35000 }, value: 1375 },
+          { name: 'Button', timeData: { actualDuration: 35000 }, value: 8746 },
+        ],
+      },
+      { name: 'MarketSContainer', timeData: { actualDuration: 35000 }, value: 1041 },
+      { name: 'MainSlider', timeData: { actualDuration: 35000 }, value: 5176 },
+      { name: 'Tree', timeData: { actualDuration: 35000 }, value: 449 },
+      { name: 'AnotherTree', timeData: { actualDuration: 35000 }, value: 5593 },
+    ],
   };
+
   // Set up wrapper
   beforeEach(() => {
     wrapper = mount(<Chart {...props} />);
