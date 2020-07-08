@@ -18,12 +18,11 @@
 
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import * as d3 from 'd3';
-import { schemeSet1 as colorScheme } from 'd3';
-
-// import { addNewSnapshots } from '../actions/actions';
-
+// import { schemeSet1 as colorScheme } from 'd3';
 
 const PerfView = ({ snapshots, viewIndex, width = 600, height = 600 }) => {
+  console.log('PerfView -> viewIndex', viewIndex);
+  console.log('PerfView CONSTRUCTOR -> snapshots', snapshots);
   const svgRef = useRef(null);
 
   // Figure out which snapshot index to use
@@ -56,7 +55,7 @@ const PerfView = ({ snapshots, viewIndex, width = 600, height = 600 }) => {
   }, [indexToDisplay, svgRef]);
 
   useEffect(() => {
-    // console.log(`***** useEffect - MAIN -> snapshots[${indexToDisplay}]`, snapshots[indexToDisplay]);
+    console.log(`***** useEffect - MAIN -> snapshots[${indexToDisplay}]`, snapshots[indexToDisplay]);
 
     // Error, no App-level component present
     if (snapshots[indexToDisplay].children.length < 1) return;

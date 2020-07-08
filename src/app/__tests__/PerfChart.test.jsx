@@ -10,30 +10,38 @@ configure({ adapter: new Adapter() });
 describe('Life cycle methods in PerfView', () => {
   let wrapper;
 
-  const snapshots = {
-    name: 'App',
-    timeData: { actualDuration: 35000 },
-    value: 17010,
-    children: [
-      { name: 'DisplayPanel', timeData: { actualDuration: 35000 }, value: 17010 },
-      { name: 'AltDisplay', timeData: { actualDuration: 35000 }, value: 5842 },
-      {
-        name: 'Button Panel',
-        timeData: { actualDuration: 35000 },
-        value: 17010,
-        children: [
-          { name: 'Button', timeData: { actualDuration: 35000 }, value: 50000 },
-          { name: 'Button', timeData: { actualDuration: 35000 }, value: 2047 },
-          { name: 'Button', timeData: { actualDuration: 35000 }, value: 1375 },
-          { name: 'Button', timeData: { actualDuration: 35000 }, value: 8746 },
-        ],
-      },
-      { name: 'MarketSContainer', timeData: { actualDuration: 35000 }, value: 1041 },
-      { name: 'MainSlider', timeData: { actualDuration: 35000 }, value: 5176 },
-      { name: 'Tree', timeData: { actualDuration: 35000 }, value: 449 },
-      { name: 'AnotherTree', timeData: { actualDuration: 35000 }, value: 5593 },
-    ],
-  };
+  const snapshots = [
+    {
+      name: 'root',
+      state: 'root',
+      componentData: {},
+      children:
+      [
+        {
+          name: 'App',
+          state: { counter: 10 },
+          componentData: { actualDuration: 10000 },
+          children:
+          [
+            { name: 'DisplayPanel', state: 'stateless', componentData: { actualDuration: 5000 }, children: [] },
+            { name: 'AltDisplay', state: 'stateless', componentData: { actualDuration: 4000 }, children: [] },
+            {
+              name: 'Button Panel',
+              state: 'stateless',
+              componentData: { actualDuration: 3000 },
+              children:
+              [
+                { name: 'Button', state: { counter: 2 }, componentData: { actualDuration: 2000 }, children: [] },
+                { name: 'Button', state: { counter: 1 }, componentData: { actualDuration: 1000 }, children: [] },
+              ],
+            },
+            { name: 'MarketSContainer', componentData: { actualDuration: 500 }, children: [] },
+            { name: 'MainSlider', componentData: { actualDuration: 100 }, children: [] },
+          ],
+        },
+      ],
+    },
+  ];
 
   // Set up wrapper
   beforeEach(() => {
