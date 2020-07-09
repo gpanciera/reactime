@@ -59,8 +59,7 @@ describe('Life cycle methods in PerfView', () => {
   snapshots.push(snapshot);
   snapshots.push(snapshot);
 
-  // Set up wrapper
-
+  // Set up ReactWrapper
   it('allows us to set props', () => {
     const wrapper = mount(<PerfView viewIndex={-1} snapshots={snapshots} />);
     expect(wrapper.props().viewIndex).toEqual(-1);
